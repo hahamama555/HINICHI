@@ -1,1 +1,567 @@
-# HINICHI
+
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#101b3b">
+<title>誕生日 81マス</title>
+
+<style>
+:root {
+  color-scheme: dark;
+  --gold: #f4c64e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background: radial-gradient(circle at top, #294c91, #101b3b 58%, #080e20);
+  font-family: -apple-system, BlinkMacSystemFont,
+    "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  color: #fff;
+  padding: max(4px, env(safe-area-inset-top)) 8px
+    max(4px, env(safe-area-inset-bottom));
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+main {
+  width: 100%;
+  max-width: 560px;
+  height: calc(
+    100svh - max(4px, env(safe-area-inset-top))
+    - max(4px, env(safe-area-inset-bottom))
+  );
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3px, .6svh, 6px);
+  min-height: 0;
+}
+
+.title {
+  text-align: center;
+  font-weight: 900;
+  font-size: clamp(21px, 6vw, 31px);
+  line-height: 1.05;
+  text-shadow: 0 2px 0 #7c3900, 0 0 10px #ffd65b;
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.sub {
+  text-align: center;
+  color: #ffe58a;
+  font-weight: 800;
+  font-size: clamp(11px, 3.2vw, 15px);
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.progress {
+  background: #08142f;
+  border: 2px solid var(--gold);
+  border-radius: 9px;
+  text-align: center;
+  padding: 4px;
+  font-size: clamp(19px, 5vw, 25px);
+  font-weight: 900;
+  line-height: 1.05;
+  flex: 0 0 auto;
+}
+
+.progress small {
+  font-size: 10px;
+  color: #ffe58a;
+}
+
+.stage-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stage {
+  position: relative;
+  width: min(100%, 48svh);
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 1 / 1;
+  border: 3px solid var(--gold);
+  border-radius: 9px;
+  overflow: hidden;
+  background: #17264b;
+  box-shadow: 0 0 14px #f8c84a66;
+  flex: 0 1 auto;
+}
+
+/* 写真の縦横比を維持 */
+.photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  background: #17264b;
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  gap: 1px;
+  padding: 1px;
+}
+
+.tile {
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid #fff3a0;
+  border-radius: 3px;
+  background: linear-gradient(
+    145deg,
+    #ffe887,
+    #e7a91c 55%,
+    #a95c08
+  );
+  box-shadow: inset 0 0 4px #fff8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: clamp(11px, 3vw, 17px);
+  line-height: 1.15;
+  font-weight: 900;
+  text-shadow: 0 1px 2px #754000;
+  touch-action: manipulation;
+  padding: 1px;
+  white-space: nowrap;
+}
+
+.tile.star {
+  font-size: clamp(16px, 4.5vw, 23px);
+}
+
+.tile.open {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hint {
+  text-align: center;
+  font-weight: 800;
+  color: #fff2bd;
+  font-size: clamp(10px, 2.8vw, 13px);
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.panel {
+  background: #14264c;
+  border: 1px solid #6783bb;
+  border-radius: 9px;
+  padding: 6px;
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.panel h2 {
+  font-size: 12px;
+  margin: 0 0 5px;
+  color: #ffdf72;
+}
+
+.buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.btn {
+  border: 0;
+  border-radius: 8px;
+  padding: 7px 4px;
+  font-size: clamp(11px, 3vw, 14px);
+  line-height: 1.1;
+  font-weight: 900;
+  color: #17203d;
+  background: linear-gradient(#ffe58b, #e5a72b);
+  touch-action: manipulation;
+  min-height: 32px;
+}
+
+.btn.secondary {
+  background: #f5f7ff;
+  color: #18264b;
+}
+
+.btn.danger {
+  background: #ff7b9e;
+  color: #3b1020;
+}
+
+.btn.all {
+  background: linear-gradient(#fff3a5, #ffbd25);
+  color: #522b00;
+  border: 1px solid #fff0a0;
+  box-shadow: 0 0 7px #ffd65b88;
+}
+
+.btn:active {
+  transform: scale(.98);
+}
+
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.upload-label {
+  font-size: 11px;
+  color: #dbe5ff;
+  flex: 1;
+  margin: 0;
+}
+
+input[type=file] {
+  width: 58%;
+  min-width: 0;
+  font-size: 11px;
+  color: #fff;
+}
+
+.status {
+  text-align: center;
+  font-size: 11px;
+  color: #cbd8f5;
+  margin-top: 4px;
+}
+
+.note {
+  font-size: 9px;
+  color: #c5d2ef;
+  line-height: 1.2;
+  margin: 0;
+  text-align: center;
+  flex: 0 0 auto;
+}
+
+@media (max-height: 700px) {
+  main {
+    gap: 2px;
+  }
+
+  .title {
+    font-size: 19px;
+  }
+
+  .progress {
+    padding: 2px;
+  }
+
+  .panel {
+    padding: 4px;
+  }
+
+  .btn {
+    min-height: 27px;
+    padding: 5px 2px;
+  }
+
+  .stage {
+    width: min(100%, 40svh);
+  }
+
+  .tile {
+    font-size: clamp(9px, 2.5vw, 13px);
+  }
+}
+</style>
+</head>
+
+<body>
+<main>
+
+  <div class="title">誕生日</div>
+
+  <div class="sub">
+    ⭐ ギフトスター1個で1マスOPEN！ ⭐
+  </div>
+
+  <div class="progress">
+    <span id="count">0</span> / 81 OPEN
+    <br>
+    <small>自分の誕生日を見つけてね！</small>
+  </div>
+
+  <div class="stage-wrap">
+    <div class="stage">
+      <img class="photo" id="photo" alt="出題する写真">
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
+
+  <div class="hint">
+    自分の誕生日に当てはまるマスをチェック！
+  </div>
+
+  <section class="panel">
+    <h2>📱 配信中の操作</h2>
+
+    <div class="buttons">
+
+      <button class="btn" id="next" type="button">
+        ⭐ 次の1マスOPEN
+      </button>
+
+      <button class="btn secondary" id="undo" type="button">
+        ↩ 1マス戻す
+      </button>
+
+      <button class="btn danger" id="reset" type="button">
+        ⟲ 全81マスを隠す
+      </button>
+
+      <button class="btn secondary" id="shuffle" type="button">
+        🔀 ランダムOPEN
+      </button>
+
+      <button class="btn all" id="openAll" type="button">
+        🌟 全81マスOPEN
+      </button>
+
+    </div>
+
+    <div class="status" id="status">
+      準備OK・写真を選んでスタート！
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>🖼️ 出題する写真</h2>
+
+    <div class="upload-row">
+      <label class="upload-label" for="upload">
+        iPhoneの写真から選択
+      </label>
+
+      <input id="upload" type="file" accept="image/*">
+    </div>
+  </section>
+
+  <p class="note">
+    ※手動操作版です。ギフトスターの自動検知には別途イベント連携が必要です。
+  </p>
+
+</main>
+
+<script>
+const grid = document.getElementById('grid');
+const count = document.getElementById('count');
+const status = document.getElementById('status');
+
+const TOTAL = 81;
+const STAR_COUNT = 50;
+
+let opened = [];
+let tiles = [];
+
+// 1日〜31日
+const labels = Array.from(
+  { length: 31 },
+  (_, i) => `${i + 1}日`
+);
+
+// 配列をランダムに並び替え
+function shuffleArray(array) {
+  const result = [...array];
+
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
+}
+
+// 81マスを作成
+function createBoardItems() {
+  const positions = Array.from(
+    { length: TOTAL },
+    (_, i) => i
+  );
+
+  // 星50個の位置をランダムに決定
+  const starPositions = new Set(
+    shuffleArray(positions).slice(0, STAR_COUNT)
+  );
+
+  const result = [];
+  let labelIndex = 0;
+
+  for (let i = 0; i < TOTAL; i++) {
+    if (starPositions.has(i)) {
+      result.push({
+        isStar: true
+      });
+    } else {
+      result.push({
+        isStar: false,
+        label: labels[labelIndex]
+      });
+
+      labelIndex++;
+    }
+  }
+
+  return result;
+}
+
+// タイルを作成
+function createTiles() {
+  grid.innerHTML = '';
+  tiles = [];
+  opened = [];
+
+  const items = createBoardItems();
+
+  items.forEach((item, i) => {
+    const b = document.createElement('button');
+
+    b.className = 'tile';
+    b.type = 'button';
+
+    if (item.isStar) {
+      b.classList.add('star');
+      b.textContent = '⭐';
+      b.setAttribute('aria-label', '星のマス');
+    } else {
+      b.textContent = item.label;
+      b.setAttribute('aria-label', item.label);
+    }
+
+    b.addEventListener('click', () => {
+      openTile(i);
+    });
+
+    grid.appendChild(b);
+    tiles.push(b);
+  });
+
+  update();
+}
+
+// 画面更新
+function update() {
+  count.textContent = opened.length;
+
+  if (opened.length === TOTAL) {
+    status.textContent = '🌟 全81マスOPEN！完全達成！';
+  } else {
+    status.textContent =
+      `${opened.length}マスOPEN・残り${TOTAL - opened.length}マス`;
+  }
+}
+
+// 指定マスを開く
+function openTile(i) {
+  if (opened.includes(i)) return;
+
+  opened.push(i);
+  tiles[i].classList.add('open');
+
+  update();
+}
+
+// 次のマスを開く
+function openNext(random = false) {
+  const left = tiles
+    .map((_, i) => i)
+    .filter(i => !opened.includes(i));
+
+  if (!left.length) return;
+
+  const i = random
+    ? left[Math.floor(Math.random() * left.length)]
+    : left[0];
+
+  openTile(i);
+}
+
+// 次の1マス
+document.getElementById('next').onclick = () => {
+  openNext(false);
+};
+
+// ランダムOPEN
+document.getElementById('shuffle').onclick = () => {
+  openNext(true);
+};
+
+// 1マス戻す
+document.getElementById('undo').onclick = () => {
+  const i = opened.pop();
+
+  if (i !== undefined) {
+    tiles[i].classList.remove('open');
+  }
+
+  update();
+};
+
+// 全81マスを隠す・星を再抽選
+document.getElementById('reset').onclick = () => {
+  createTiles();
+  status.textContent = '全81マスを隠しました！';
+};
+
+// 全81マスOPEN
+document.getElementById('openAll').onclick = () => {
+  for (let i = 0; i < TOTAL; i++) {
+    if (!opened.includes(i)) {
+      opened.push(i);
+      tiles[i].classList.add('open');
+    }
+  }
+
+  update();
+};
+
+// 写真を選択
+document.getElementById('upload').onchange = e => {
+  const f = e.target.files && e.target.files[0];
+
+  if (!f) return;
+
+  const url = URL.createObjectURL(f);
+  document.getElementById('photo').src = url;
+
+  createTiles();
+
+  status.textContent =
+    '写真をセットしました！配信を始められます。';
+};
+
+// 最初の表示
+createTiles();
+</script>
+
+</body>
+</html>
+
